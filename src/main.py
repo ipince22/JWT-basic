@@ -64,12 +64,41 @@ def login():
 
 
 @app.route('/user', methods=["GET"])
-@jwt_required()
+
 def lista_usuarios():
-    current_user = get_jwt_identity()
+    #current_user = get_jwt_identity()
     users = User.query.all()
     request_body = list(map(lambda user:user.serialize(),users))
     return jsonify(request_body),200
+
+
+
+@app.route('/user', methods=["POST"])
+def crear_usuarios():
+    data = request.get_json()
+    hashed_password = generate_password_hash(data["password"],method='sha256')
+    user1 = User(username=data["username"],email=data["email"],password=hashed_password)
+    db.session.add(user1)
+    db.session.commit()
+    return jsonify("Message : Se adiciono un usuario!"),200
+
+@app.route('/user/<id>', methods=["DELETE"])
+@jwt_required()
+def delete_usuarios(id):
+    current_user = get_jwt_identity()
+    user1 = User.query.get(id)
+    if user1 is None:
+        raise APIException("usuario no existe!",status_code=404)
+    db.session.delete(user1)
+    db.session.commit()
+    return jsonify({"Registro eliminado,ok!":current_user }),200
+
+
+
+
+
+
+
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
@@ -81,7 +110,7 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
+@app.route('/hello', methods=['GET'])
 def handle_hello():
 
     response_body = {
