@@ -64,11 +64,18 @@ def login():
 
 
 @app.route('/user', methods=["GET"])
-
 def lista_usuarios():
     #current_user = get_jwt_identity()
     users = User.query.all()
     request_body = list(map(lambda user:user.serialize(),users))
+    return jsonify(request_body),200
+
+@app.route('/user/<int:id>', methods=["GET"])
+def lista_un_usuario(id):  
+    user1 = User.query.get(id)
+    if user1 is None:
+        raise APIException('User not found', status_code=404)
+    request_body = user1.serialize()
     return jsonify(request_body),200
 
 
